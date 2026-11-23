@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Boussole Parcoursup MCLAB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE everyday, calm and reassuring for a teenager and a parent, precise for the consultant
+   IDEA a metro line: seven stations from "je me découvre" to "mon dossier est prêt"
+   PICTURE the route band at the top, each station filling as the step is completed
+   COLOUR white ground, ink #101418, line blue #0a5cff, amber #ffb400 for what matters, green #00a05a for done; night #0e1116
+   TYPE Figtree 800 for titles, Figtree for text
+   LAYOUT route band full width, then one working panel; two columns above 900px where useful, one column on phone */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0e1116);--ink:light-dark(#101418,#eef1f5);--mute:light-dark(#4b5563,#a8b0bc);--line:light-dark(#0a5cff,#5b8dff);--amb:light-dark(#b37a00,#ffc53d);--ambf:light-dark(#fff4d6,#3a2c05);--ok:light-dark(#00804a,#3fd08a);--okf:light-dark(#e3f7ec,#0d2e1f);--err:light-dark(#b42318,#ff8a80);--panel:light-dark(#f4f6fa,#161a22);--edge:light-dark(#d7dce5,#2b313c);--band:light-dark(#0a2a6b,#0a1838)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;overflow-x:clip}
+a{color:var(--line)}
+.wrap{max-width:1240px;margin:0 auto;padding:0 max(4vw,16px)}
+header.top{background:var(--band);color:#fff;padding:20px 0 26px}
+header.top h1{font-size:clamp(26px,4vw,40px);line-height:1.05;letter-spacing:-.02em;margin:0 0 4px;font-weight:800;text-wrap:balance}
+header.top p{margin:0;color:#d5def0;max-width:70ch}
+.modebar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-size:14px;background:rgba(255,255,255,.12);color:#fff}
+.chip.on{background:#00a05a}
+.route{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin-top:22px}
+.route::before{content:"";position:absolute;left:7%;right:7%;top:21px;height:8px;border-radius:4px;background:rgba(255,255,255,.22)}
+.route .fill{position:absolute;left:7%;top:21px;height:8px;border-radius:4px;background:#ffb400;transition:width .5s}
+.st{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:#fff;font:inherit;cursor:pointer;padding:0 2px;min-height:44px}
+.st i{width:50px;height:50px;border-radius:50%;border:6px solid #fff;background:var(--band);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:16px;position:relative;overflow:hidden}
+.st i b{position:absolute;left:0;right:0;bottom:0;background:#ffb400;z-index:0}
+.st i span{position:relative;z-index:1}
+.st.done i{background:#00a05a}.st.done i b{background:#00a05a}
+.st small{font-size:13px;line-height:1.2;text-align:center}
+.st[aria-current=step] small{font-weight:800;text-decoration:underline;text-underline-offset:4px}
+.st:focus-visible{outline:3px solid #ffb400;outline-offset:4px;border-radius:8px}
+main{padding:28px 0 60px}
+h2{font-size:clamp(24px,3vw,32px);line-height:1.1;letter-spacing:-.02em;margin:0 0 6px}
+h3{font-size:19px;margin:26px 0 8px}
+.lead{color:var(--mute);margin:0 0 18px;max-width:72ch}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.card{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:18px}
+.note{border-left:4px solid var(--amb);background:var(--ambf);padding:10px 14px;border-radius:6px;margin:12px 0}
+.okbox{border-left:4px solid var(--ok);background:var(--okf);padding:10px 14px;border-radius:6px;margin:12px 0}
+label{display:block;font-weight:600;margin:12px 0 4px}
+.hint{font-size:14px;color:var(--mute);font-weight:400}
+input[type=text],input[type=number],select,textarea{width:100%;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--edge);border-radius:10px;background:var(--bg);color:var(--ink);min-height:44px}
+textarea{min-height:110px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--line);outline-offset:2px}
+.chk{display:flex;gap:10px;align-items:flex-start;font-weight:400;margin:8px 0}
+.chk input{width:22px;height:22px;margin:2px 0 0;flex:none;accent-color:var(--line)}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pills label{margin:0;font-weight:400;border:1px solid var(--edge);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:44px;display:inline-flex;align-items:center;gap:8px;background:var(--bg)}
+.pills input{accent-color:var(--line);width:18px;height:18px}
+.pills label:has(input:checked){border-color:var(--line);background:color-mix(in srgb,var(--line) 12%,var(--bg))}
+.btn{font:inherit;font-weight:600;border-radius:10px;border:1px solid var(--line);background:var(--line);color:#fff;padding:10px 16px;min-height:44px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--line)}
+.btn.amb{background:#ffb400;border-color:#ffb400;color:#101418}
+.btn.danger{background:transparent;color:var(--err);border-color:var(--err)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.q{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--edge)}
+.scale{display:flex;gap:4px}
+.scale label{margin:0;width:44px;height:44px;border:1px solid var(--edge);border-radius:10px;display:grid;place-items:center;cursor:pointer;font-weight:600;background:var(--bg)}
+.scale input{position:absolute;opacity:0;pointer-events:none}
+.scale label:has(input:checked){background:var(--line);color:#fff;border-color:var(--line)}
+.scale label:has(input:focus-visible){outline:3px solid var(--line);outline-offset:2px}
+.bars .b{display:grid;grid-template-columns:9em minmax(0,1fr) 3em;gap:10px;align-items:center;margin:6px 0}
+.bars .t{height:14px;border-radius:7px;background:var(--edge);overflow:hidden}
+.bars .t i{display:block;height:100%;background:var(--line);border-radius:7px}
+.bars .v{text-align:right;font-variant-numeric:tabular-nums}
+.piste{border:1px solid var(--edge);border-radius:14px;padding:16px;margin:12px 0;background:var(--bg)}
+.piste h4{margin:0 0 4px;font-size:18px}
+.tag{display:inline-block;font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px;margin-right:6px}
+.t1{background:var(--okf);color:var(--ok)}.t2{background:color-mix(in srgb,var(--line) 14%,var(--bg));color:var(--line)}.t3{background:var(--ambf);color:var(--amb)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--edge);vertical-align:top}
+td.n,th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cal{list-style:none;padding:0;margin:0}
+.cal li{display:grid;grid-template-columns:8.5em minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid var(--edge)}
+.cal b{white-space:nowrap}
+.cal li.past{color:var(--mute)}
+.count{font-size:14px;font-variant-numeric:tabular-nums}
+.count.over{color:var(--err);font-weight:700}
+.ia{border:1px dashed var(--line);border-radius:14px;padding:16px;margin-top:16px}
+.ia pre{white-space:pre-wrap;font:inherit;margin:0}
+.hidden{display:none!important}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-weight:600;z-index:9;max-width:90vw}
+footer{border-top:1px solid var(--edge);padding:18px 0 30px;color:var(--mute);font-size:14px}
+@media(max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.route{grid-template-columns:repeat(7,minmax(0,1fr))}.st i{width:38px;height:38px;border-width:4px;font-size:14px}.route::before,.route .fill{top:15px;height:6px}.st small{font-size:11px}.q{grid-template-columns:minmax(0,1fr)}.bars .b{grid-template-columns:7em minmax(0,1fr) 2.6em}.cal li{grid-template-columns:minmax(0,1fr);gap:2px}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--edge)}.stack td{display:flex;justify-content:space-between;gap:12px;border:0;padding:3px 0}.stack td::before{content:attr(data-l);font-weight:600}}
+@media(prefers-reduced-motion:reduce){.route .fill{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Boussole Parcoursup</h1>
+    <p>Se découvrir, croiser avec son parcours scolaire, trouver des pistes, construire ses vœux et son dossier. Un outil MCLAB Conseil pour les lycéens et leurs parents.</p>
+    <div class="modebar" id="modebar"><span class="chip" id="chipMode">Mode guidé (sans IA)</span><span class="chip" id="chipSave">Données gardées dans ce navigateur</span></div>
+    <nav class="route" id="route" aria-label="Étapes"><div class="fill" id="fill"></div></nav>
+  </div>
+</header>
+<main class="wrap" id="view" tabindex="-1"></main>
+<footer><div class="wrap">MCLAB Conseil, accompagnement à l'orientation. Les pistes proposées sont des repères indicatifs : elles se discutent en séance et se vérifient sur <a href="https://www.onisep.fr" rel="noopener">onisep.fr</a> et <a href="https://www.parcoursup.gouv.fr" rel="noopener">parcoursup.gouv.fr</a>. Les questionnaires de cette application ne sont pas des tests psychométriques étalonnés. <span id="ver">Version 1.0, novembre 2026.</span></div></footer>
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+<input type="file" id="fileJson" accept="application/json,.json" class="hidden">
+<input type="file" id="fileCsv" accept=".csv,text/csv" class="hidden">
+
+<script>
+{
+const KEY='mclab-parcoursup-v1';
+const STEPS=[['accueil','Accueil'],['profil','Profil'],['scolaire','Scolarité'],['pistes','Pistes'],['voeux','Vœux'],['dossier','Dossier'],['bilan','Bilan']];
+const RIASEC={R:'Réaliste (concret, manuel, technique)',I:'Investigateur (comprendre, analyser)',A:'Artistique (créer, imaginer)',S:'Social (aider, transmettre)',E:'Entreprenant (convaincre, mener)',C:'Conventionnel (organiser, rigueur)'};
+const QR=[['R','Réparer, construire ou bricoler des objets'],['R','Bouger, travailler dehors ou avec ton corps'],['R','Utiliser des outils, des machines, du matériel technique'],['I','Comprendre comment les choses fonctionnent, chercher le pourquoi'],['I','Résoudre des énigmes ou des problèmes de logique'],['I','Faire des expériences, analyser des informations ou des données'],['A','Créer : dessin, musique, écriture, vidéo, mode'],['A','Imaginer des idées originales, inventer'],['A','Exprimer ton style, tes émotions, ton point de vue'],['S','Aider, écouter ou conseiller quelqu’un'],['S','Expliquer ou apprendre quelque chose à d’autres'],['S','Travailler en équipe sur un projet utile aux autres'],['E','Convaincre, débattre, défendre une idée'],['E','Organiser un événement ou prendre la tête d’un groupe'],['E','Lancer un projet, vendre, négocier'],['C','Classer, ranger, organiser des informations'],['C','Suivre une méthode précise et vérifier les détails'],['C','Gérer un budget, des chiffres ou un planning']];
+const GARDNER=[['ling','Avec les mots','Je trouve facilement mes mots, j’aime lire, écrire, raconter.'],['logi','Avec la logique et les nombres','J’aime raisonner, calculer, trouver la solution.'],['spat','Avec les images et l’espace','Je visualise, je dessine, je me repère facilement.'],['corp','Avec le corps','J’apprends en faisant, en manipulant, en bougeant.'],['musi','Avec les sons et le rythme','Je retiens grâce à la musique, je suis sensible aux sons.'],['inter','Avec les autres','Je comprends vite les gens, j’aime coopérer.'],['intra','Avec moi-même','Je sais ce que je ressens, j’aime réfléchir seul(e).'],['natu','Avec la nature','J’observe, je classe, je m’intéresse au vivant.']];
+const VALEURS=['Aider les autres','Créer','Bien gagner sa vie','Sécurité de l’emploi','Autonomie','Être reconnu(e)','Bouger, voyager','Nature, environnement','Innovation, technologie','Équilibre vie perso','Travailler en équipe','Prendre des responsabilités'];
+const SPE=['Arts','Biologie-écologie','EPPCS (éducation physique, pratiques et culture sportives)','HGGSP','HLP','LLCER','LCA','Mathématiques','NSI','Physique-chimie','SVT','Sciences de l’ingénieur','SES'];
+const TRONC=['Français','Philosophie','Histoire-géographie','Langue vivante A','Langue vivante B','Enseignement scientifique','Mathématiques (tronc commun)','EPS'];
+const DOM=[
+ {id:'com',n:'Commerce, marketing, communication',c:'ESA',spe:['SES','HGGSP','LLCER','Mathématiques'],sub:['Français','Langue vivante A','SES','Mathématiques'],f:'BTS (NDRC, MCO, Communication), BUT TC, licence économie-gestion, écoles de commerce post-bac',m:'chargé(e) de marketing, chef(fe) de projet événementiel, commercial(e), chargé(e) de communication'},
+ {id:'ges',n:'Gestion, comptabilité, finance',c:'CEI',spe:['SES','Mathématiques'],sub:['Mathématiques','SES','Mathématiques (tronc commun)'],f:'BTS CG, BUT GEA, DCG, licence économie-gestion, CPGE ECG',m:'comptable, contrôleur(se) de gestion, conseiller(e) bancaire, analyste'},
+ {id:'dro',n:'Droit, science politique, administration',c:'EIS',spe:['HGGSP','SES','HLP'],sub:['Français','Histoire-géographie','Philosophie','HGGSP','SES'],f:'licence de droit, BUT Carrières juridiques, IEP (Sciences Po), prépas concours administratifs',m:'juriste, avocat(e), notaire, attaché(e) d’administration'},
+ {id:'soc',n:'Social, éducation, animation',c:'SAE',spe:['SES','HLP','SVT','HGGSP'],sub:['Français','Philosophie','SES'],f:'BUT Carrières sociales, diplômes d’État du travail social, BTS SP3S, licence sciences de l’éducation',m:'éducateur(rice), assistant(e) de service social, animateur(rice), professeur(e) des écoles'},
+ {id:'san',n:'Santé, paramédical',c:'ISR',spe:['SVT','Physique-chimie','Mathématiques'],sub:['SVT','Physique-chimie','Mathématiques','Enseignement scientifique'],f:'PASS / L.AS, IFSI (soins infirmiers), instituts paramédicaux, BUT Génie biologique',m:'infirmier(e), kinésithérapeute, médecin, manipulateur(rice) radio'},
+ {id:'sci',n:'Sciences, ingénierie',c:'IRC',spe:['Mathématiques','Physique-chimie','Sciences de l’ingénieur','NSI'],sub:['Mathématiques','Physique-chimie','Sciences de l’ingénieur'],f:'CPGE scientifiques, écoles d’ingénieurs post-bac, BUT, licences scientifiques',m:'ingénieur(e), technicien(ne) supérieur(e), chercheur(se)'},
+ {id:'num',n:'Informatique, numérique',c:'ICR',spe:['NSI','Mathématiques','Sciences de l’ingénieur'],sub:['NSI','Mathématiques'],f:'BUT Informatique, BUT MMI, BTS SIO, licence informatique, écoles du numérique',m:'développeur(se), administrateur(rice) réseaux, data analyst, UX designer'},
+ {id:'art',n:'Arts, design, culture',c:'AES',spe:['Arts','HLP','LLCER'],sub:['Arts','Français','Philosophie'],f:'DN MADE, écoles d’art, licences arts, BUT MMI',m:'designer, graphiste, médiateur(rice) culturel(le), architecte d’intérieur'},
+ {id:'lan',n:'Langues, lettres, international',c:'ASI',spe:['LLCER','HLP','HGGSP','LCA'],sub:['Français','Langue vivante A','Langue vivante B','LLCER','HLP'],f:'licences LLCER et LEA, CPGE littéraires, licence lettres, info-com',m:'traducteur(rice), chargé(e) de relations internationales, professeur(e), éditeur(rice)'},
+ {id:'tou',n:'Tourisme, hôtellerie, événementiel',c:'ESR',spe:['SES','LLCER','HGGSP'],sub:['Langue vivante A','Langue vivante B','Histoire-géographie'],f:'BTS Tourisme, BTS MHR, BUT TC, licences professionnelles du tourisme et de l’événementiel',m:'agent(e) de voyages, chef(fe) de projet événementiel, réceptionniste, guide'},
+ {id:'env',n:'Environnement, agriculture, vivant',c:'RIS',spe:['SVT','Biologie-écologie','Physique-chimie'],sub:['SVT','Biologie-écologie','Enseignement scientifique'],f:'BTSA, BUT Génie biologique, licence SVT, écoles d’agronomie',m:'technicien(ne) environnement, agronome, soigneur(se) animalier(e), paysagiste'},
+ {id:'spo',n:'Sport, activités physiques',c:'RSE',spe:['EPPCS (éducation physique, pratiques et culture sportives)','SVT'],sub:['EPS','SVT'],f:'licence STAPS, BPJEPS, BTS liés au sport',m:'éducateur(rice) sportif(ve), coach, préparateur(rice) physique, professeur(e) d’EPS'},
+ {id:'ind',n:'Industrie, BTP, logistique',c:'RCI',spe:['Sciences de l’ingénieur','Physique-chimie','Mathématiques'],sub:['Mathématiques','Physique-chimie','Sciences de l’ingénieur'],f:'BTS industriels et du bâtiment, BUT GMP, GCCD, QLIO, MLT',m:'technicien(ne) de maintenance, conducteur(rice) de travaux, logisticien(ne)'},
+ {id:'shs',n:'Sciences humaines : psychologie, sociologie, histoire',c:'ISA',spe:['SES','HGGSP','HLP','SVT'],sub:['Histoire-géographie','Philosophie','SES','HGGSP'],f:'licences de psychologie, sociologie, histoire, géographie',m:'psychologue (bac+5), chargé(e) d’études, documentaliste, urbaniste'},
+ {id:'med',n:'Médias, journalisme, audiovisuel',c:'AEI',spe:['HGGSP','HLP','Arts','LLCER'],sub:['Français','Histoire-géographie','HGGSP'],f:'BUT Information-communication, BTS Audiovisuel, licences info-com, écoles de journalisme (souvent après bac+3)',m:'journaliste, monteur(se), community manager, chargé(e) de production'}
+];
+const CAL=[['2026-10-01','Octobre 2026 à janvier 2027','Je m’informe et je découvre les formations.'],['2026-12-17','17 décembre 2026','Ouverture de la carte des formations 2027 sur parcoursup.gouv.fr.'],['2027-01-18','18 janvier 2027','Ouverture des inscriptions et de la formulation des vœux.'],['2027-03-11','11 mars 2027','Dernier jour pour formuler ses vœux.'],['2027-04-01','1er avril 2027','Dernier jour pour compléter son dossier et confirmer ses vœux.'],['2027-06-01','1er juin 2027','Début de la phase d’admission principale.'],['2027-07-10','10 juillet 2027','Fin de la phase principale.'],['2027-09-09','9 septembre 2027','Fin de la phase complémentaire.']];
+const CHECK=['Créer son compte Parcoursup avec une adresse e-mail consultée régulièrement (et celle d’un parent)','Vérifier ses informations personnelles et sa scolarité (bulletins remontés par le lycée)','Remplir la rubrique sur ses activités et centres d’intérêt','Rédiger un projet de formation motivé par vœu, sans copier-coller','Vérifier les attendus et les pièces demandées sur chaque fiche formation','Repérer les frais de candidature éventuels (écoles privées, concours)','Prévoir au moins un vœu en apprentissage si c’est une option, et commencer la recherche d’employeur','Confirmer chaque vœu avant le 1er avril 2027','Noter les dates des journées portes ouvertes des formations visées'];
+
+const blank=()=>({v:1,meta:{role:'',age:'',consent:false,parent:false,exported:false,updated:''},e:{prenom:'',classe:'Terminale',voie:'Générale',spe:[],lycee:'',commune:'',moy:{},appr:''},r:{},g:[],pc:{animal:'',objet:'',lieu:'',metier:''},val:[],excl:[],cons:{region:'',mob:'Ma région',app:'Peut-être',duree:'Je ne sais pas',budget:''},motiv:'',pistes:[],kw:'',forms:[],proj:{},notes:{},ia:{analyse:'',date:''}});
+let S=blank(),SAMPLE=null,DL=null,STORE=true;
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(blank(),JSON.parse(raw))}catch(e){STORE=false}
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const get=p=>p.split('.').reduce((o,k)=>o==null?o:o[k],S);
+const set=(p,v)=>{const ks=p.split('.');let o=S;ks.slice(0,-1).forEach(k=>{if(o[k]==null||typeof o[k]!=='object')o[k]={};o=o[k]});o[ks.at(-1)]=v};
+function save(){S.meta.updated=new Date().toISOString();if(!STORE)return;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){STORE=false;$('#chipSave').textContent='Sauvegarde navigateur indisponible : pense à exporter'}}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.add('hidden'),3200)}
+
+function scores(){const s={R:0,I:0,A:0,S:0,E:0,C:0};QR.forEach((q,i)=>{s[q[0]]+=Number(S.r[i]||0)});return s}
+function answered(){return QR.filter((q,i)=>S.r[i]!=null&&S.r[i]!=='').length}
+function code3(){const s=scores();return Object.keys(s).sort((a,b)=>s[b]-s[a]).slice(0,3).join('')}
+function num(v){const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n}
+function avgOf(list){const v=list.map(k=>num(S.e.moy[k])).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
+function ranked(){const s=scores();return DOM.filter(d=>!S.excl.includes(d.id)).map(d=>{const w=[3,2,1];let fit=0;[...d.c].forEach((l,i)=>fit+=w[i]*(s[l]/9));fit/=6;const sp=d.spe.filter(x=>S.e.spe.includes(x));const bonus=Math.min(sp.length,2)*.12;const a=avgOf(d.sub);return {...d,fit,sp,a,score:Math.min(1,fit+bonus)}}).sort((x,y)=>y.score-x.score)}
+function progress(){return {accueil:S.meta.consent?1:0,profil:Math.min(1,(answered()/QR.length)*.7+(S.g.length?.15:0)+(S.val.length?.15:0)),scolaire:Math.min(1,(S.e.spe.length?.4:0)+(Object.values(S.e.moy).filter(v=>num(v)!=null).length>=4?.4:0)+(S.e.lycee?.2:0)),pistes:S.pistes.length?1:answered()>=12?.5:0,voeux:Math.min(1,S.forms.filter(f=>f.ch).length/6),dossier:Math.min(1,Object.values(S.proj).filter(t=>t&&t.length>300).length/Math.max(1,S.forms.filter(f=>f.ch).length||1)),bilan:S.meta.exported?1:0}}
+function drawRoute(cur){const p=progress();const r=$('#route');r.querySelectorAll('.st').forEach(x=>x.remove());STEPS.forEach(([id,lab],i)=>{const b=document.createElement('button');b.className='st'+(p[id]>=1?' done':'');b.type='button';if(id===cur)b.setAttribute('aria-current','step');b.innerHTML=`<i><b style="height:${Math.round(p[id]*100)}%"></b><span>${i+1}</span></i><small>${lab}</small>`;b.onclick=()=>{location.hash=id};r.appendChild(b)});let last=0;STEPS.forEach(([id],i)=>{if(p[id]>=1)last=i});$('#fill').style.width=(86*last/6)+'%'}
+
+const V={};
+V.accueil=()=>`<h2>Bienvenue</h2><p class="lead">Cette application t’aide à mieux te connaître, à relier tes envies à tes résultats et à préparer Parcoursup 2027 sans stress. Il n’y a pas de bonne ou de mauvaise réponse : tout se rediscute en séance.</p>
+<div class="grid2"><div class="card"><h3 style="margin-top:0">Qui remplit ?</h3>
+<div class="pills">${['Élève','Parent avec l’élève','Consultante en séance'].map(x=>`<label><input type="radio" name="role" data-k="meta.role" value="${x}" ${S.meta.role===x?'checked':''}>${x}</label>`).join('')}</div>
+<label for="age">Âge de l’élève</label><input type="number" id="age" min="13" max="25" data-k="meta.age" value="${esc(S.meta.age)}">
+<label for="prenom">Prénom <span class="hint">(facultatif, reste dans ce navigateur, n’est jamais envoyé à l’IA)</span></label><input type="text" id="prenom" data-k="e.prenom" value="${esc(S.e.prenom)}" autocomplete="off">
+<h3>Consentement</h3>
+<label class="chk"><input type="checkbox" id="consent" data-k="meta.consent" ${S.meta.consent?'checked':''}><span>J’ai lu la <a href="[lien vers la politique de confidentialité]" rel="noopener">politique de confidentialité</a> et j’accepte que mes réponses soient utilisées pour mon accompagnement par MCLAB Conseil.</span></label>
+<label class="chk ${Number(S.meta.age)>0&&Number(S.meta.age)<15?'':'hidden'}" id="parentRow"><input type="checkbox" id="parent" data-k="meta.parent" ${S.meta.parent?'checked':''}><span>L’élève a moins de 15 ans : un titulaire de l’autorité parentale donne aussi son accord.</span></label>
+<div id="consentMsg">${consentOk()?'<div class="okbox">C’est prêt. Tu peux passer à ton profil.</div>':''}</div>
+<div class="row"><a class="btn" href="#profil">Commencer mon profil</a></div></div>
+<div class="card"><h3 style="margin-top:0">Ce qu’il faut savoir</h3>
+<p><b>Tes réponses restent dans ce navigateur.</b> Rien n’est envoyé sur un serveur. Pour les retrouver ailleurs ou les apporter en séance, exporte ton fichier à l’étape Bilan.</p>
+<p><b>Ordinateur partagé ?</b> Efface tes données à la fin (étape Bilan).</p>
+<p id="iaInfo">${SAMPLE?'<b>Mode séance avec IA.</b> Quand tu cliques sur un bouton IA, tes réponses (sans ton prénom) sont envoyées à Claude (Anthropic) pour produire une analyse que la consultante relit avec toi.':'<b>Mode guidé.</b> Les pistes sont calculées dans l’application à partir de tes réponses. L’analyse par IA se fait en séance avec la consultante.'}</p>
+<p><b>Reprendre un dossier :</b></p><button class="btn ghost" type="button" data-act="importJson">Importer un fichier de sauvegarde</button></div></div>${notes('accueil')}`;
+function consentOk(){return S.meta.consent&&(Number(S.meta.age)>=15||S.meta.parent)}
+function notes(id){return `<details class="card" style="margin-top:20px"><summary><b>Notes et validation de la consultante</b></summary><label for="n_${id}" class="hint">Réservé à la consultante en séance</label><textarea id="n_${id}" data-k="notes.${id}">${esc(S.notes[id]||'')}</textarea></details>`}
+function gate(){return consentOk()?'':`<div class="note">Le consentement n’est pas encore donné. <a href="#accueil">Retour à l’accueil</a>.</div>`}
+
+V.profil=()=>{const s=scores();return `${gate()}<h2>Ce qui te ressemble</h2><p class="lead">Pour chaque activité, indique à quel point elle te plaît : 0 pas du tout, 1 un peu, 2 bien, 3 beaucoup. Réponds vite, à l’instinct.</p>
+<div class="grid2"><div class="card"><h3 style="margin-top:0">Tes centres d’intérêt <span class="hint">(${answered()}/${QR.length})</span></h3>${QR.map((q,i)=>`<div class="q"><span id="ql${i}">${esc(q[1])}</span><div class="scale" role="radiogroup" aria-labelledby="ql${i}">${[0,1,2,3].map(v=>`<label><input type="radio" name="r${i}" data-k="r.${i}" value="${v}" ${String(S.r[i])===String(v)?'checked':''}>${v}</label>`).join('')}</div></div>`).join('')}</div>
+<div><div class="card"><h3 style="margin-top:0">Ton profil d’intérêts</h3><p class="hint">Inspiré du modèle RIASEC de Holland. Ce n’est pas un test étalonné : c’est un point de départ pour la discussion.</p><div class="bars">${Object.keys(RIASEC).map(k=>`<div class="b"><span title="${esc(RIASEC[k])}">${esc(RIASEC[k].split(' (')[0])}</span><span class="t"><i style="width:${Math.round(s[k]/9*100)}%"></i></span><span class="v">${s[k]}/9</span></div>`).join('')}</div>${answered()>=12?`<p>Tes trois dominantes du moment : <b>${code3()}</b>.</p>`:'<p class="hint">Réponds à au moins 12 questions pour voir tes dominantes.</p>'}</div>
+<div class="card" style="margin-top:20px"><h3 style="margin-top:0">Comment tu fonctionnes le mieux</h3><p class="hint">Choisis jusqu’à 3 façons d’apprendre qui te correspondent (intelligences multiples de Gardner).</p>${GARDNER.map(g=>`<label class="chk"><input type="checkbox" data-arr="g" value="${g[0]}" ${S.g.includes(g[0])?'checked':''}><span><b>${g[1]}</b><br><span class="hint">${g[2]}</span></span></label>`).join('')}</div></div></div>
+<h3>Ce qui compte pour toi</h3><div class="pills">${VALEURS.map(v=>`<label><input type="checkbox" data-arr="val" value="${esc(v)}" ${S.val.includes(v)?'checked':''}>${esc(v)}</label>`).join('')}</div>
+<div class="grid2" style="margin-top:20px"><div class="card"><h3 style="margin-top:0">Portrait chinois</h3><p class="hint">Si les questions te semblent difficiles, ce jeu aide à dire les choses autrement.</p>
+${[['animal','Si j’étais un animal, je serais… parce que…'],['objet','Si j’étais un objet…'],['lieu','Si j’étais un lieu…'],['metier','Si j’étais un métier, même imaginaire…']].map(([k,l])=>`<label for="pc_${k}">${l}</label><input type="text" id="pc_${k}" data-k="pc.${k}" value="${esc(S.pc[k])}">`).join('')}</div>
+<div class="card"><h3 style="margin-top:0">Tes envies, tes limites</h3><label for="motiv">Un moment où tu t’es senti(e) fier(e) ou passionné(e) (cours, sport, job, bénévolat, projet perso)</label><textarea id="motiv" data-k="motiv">${esc(S.motiv)}</textarea>
+<label>Domaines que tu ne veux pas du tout <span class="hint">(ils seront écartés des pistes)</span></label><div class="pills">${DOM.map(d=>`<label><input type="checkbox" data-arr="excl" value="${d.id}" ${S.excl.includes(d.id)?'checked':''}>${esc(d.n)}</label>`).join('')}</div></div></div>
+<div class="grid2" style="margin-top:20px"><div class="card"><h3 style="margin-top:0">Tes contraintes</h3>
+<label for="reg">Région souhaitée</label><input type="text" id="reg" data-k="cons.region" value="${esc(S.cons.region)}" placeholder="Île-de-France">
+${sel('cons.mob','Mobilité',['Ma ville','Ma région','Toute la France','Étranger possible'])}${sel('cons.app','Apprentissage (alternance)',['Oui','Peut-être','Non'])}${sel('cons.duree','Durée d’études envisagée',['Je ne sais pas','2 ans','3 ans','5 ans ou plus'])}
+<label for="bud">Remarques des parents sur le budget, le logement</label><input type="text" id="bud" data-k="cons.budget" value="${esc(S.cons.budget)}"></div><div class="card"><h3 style="margin-top:0">Et ensuite</h3><p>Ton profil sera croisé avec tes résultats scolaires à l’étape suivante.</p><div class="row"><a class="btn" href="#scolaire">Ma scolarité</a></div></div></div>${notes('profil')}`};
+function sel(k,l,opts){const id='s_'+k.replace('.','_');return `<label for="${id}">${l}</label><select id="${id}" data-k="${k}">${opts.map(o=>`<option ${get(k)===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`}
+
+V.scolaire=()=>{const subs=[...TRONC,...S.e.spe.filter(x=>!TRONC.includes(x))];return `${gate()}<h2>Ton parcours scolaire</h2><p class="lead">On regarde tes résultats sans jugement : ils servent à repérer tes points d’appui et ce qui demandera de l’énergie.</p>
+<div class="grid2"><div class="card">${sel('e.classe','Classe',['Seconde','Première','Terminale'])}${sel('e.voie','Voie',['Générale','Technologique','Professionnelle'])}
+<label>Spécialités <span class="hint">(voie générale : 3 en Première, 2 en Terminale)</span></label><div class="pills">${SPE.map(x=>`<label><input type="checkbox" data-arr="e.spe" value="${esc(x)}" ${S.e.spe.includes(x)?'checked':''}>${esc(x.split(' (')[0])}</label>`).join('')}</div>
+<label for="lyc">Lycée</label><input type="text" id="lyc" data-k="e.lycee" value="${esc(S.e.lycee)}"><label for="com">Commune du lycée</label><input type="text" id="com" data-k="e.commune" value="${esc(S.e.commune)}">
+<label for="appr">Appréciations marquantes des professeurs</label><textarea id="appr" data-k="e.appr">${esc(S.e.appr)}</textarea></div>
+<div class="card"><h3 style="margin-top:0">Moyennes de l’année <span class="hint">(sur 20)</span></h3><div class="scroll"><table><thead><tr><th>Matière</th><th class="n">Moyenne</th><th>Repère</th></tr></thead><tbody>${subs.map(m=>{const v=num(S.e.moy[m]);return `<tr><td>${esc(m)}</td><td class="n"><input type="text" inputmode="decimal" aria-label="Moyenne ${esc(m)}" data-k="moy::${esc(m)}" value="${esc(S.e.moy[m]??'')}" style="width:5.5em;text-align:right"></td><td>${v==null?'':v>=14?'<span class="tag t1">point d’appui</span>':v>=10?'<span class="tag t2">solide</span>':'<span class="tag t3">à renforcer</span>'}</td></tr>`}).join('')}</tbody></table></div>
+<p class="hint">Les repères (14 et plus, 10 à 14, moins de 10) sont des seuils de lecture MCLAB, pas des critères Parcoursup.</p></div></div>
+<div class="note">Le niveau du lycée compte dans la lecture des notes. En séance, la consultante peut le situer à partir des indicateurs de valeur ajoutée des lycées publiés par le ministère.</div>
+<div class="row"><a class="btn" href="#pistes">Voir mes pistes</a></div>${notes('scolaire')}`};
+
+V.pistes=()=>{const R=ranked().slice(0,6);const ok=answered()>=12;return `${gate()}<h2>Tes pistes d’orientation</h2><p class="lead">Ces familles de formations croisent tes intérêts, tes spécialités et tes résultats. Ce sont des pistes à explorer, jamais une réponse unique. Coche celles que tu veux garder.</p>
+${ok?'':'<div class="note">Réponds à au moins 12 questions de ton profil pour des pistes fiables.</div>'}
+${R.map((d,i)=>{const tier=i<2?['t1','Piste forte']:i<4?['t2','À explorer']:['t3','Ouverture'];return `<article class="piste"><span class="tag ${tier[0]}">${tier[1]}</span><span class="hint">correspondance ${Math.round(d.score*100)} %</span><h4>${esc(d.n)}</h4>
+<p><b>Pourquoi :</b> ${(()=>{const t=code3(),m=[...d.c].filter(l=>t.includes(l));return m.length?'tes intérêts '+esc(m.map(l=>RIASEC[l].split(' (')[0].toLowerCase()).join(', ')):'cette famille est plus éloignée de tes intérêts dominants'})()} ${d.sp.length?`et tes spécialités ${esc(d.sp.map(x=>x.split(' (')[0]).join(', '))}`:''}. ${d.a!=null?`Ta moyenne dans les matières liées est de ${d.a.toFixed(1).replace('.',',')}/20.`:''}</p>
+<p><b>Formations types :</b> ${esc(d.f)}.<br><b>Exemples de métiers :</b> ${esc(d.m)}.</p>
+<label class="chk"><input type="checkbox" data-arr="pistes" value="${d.id}" ${S.pistes.includes(d.id)?'checked':''}><span>Je garde cette piste</span></label></article>`}).join('')}
+<p class="hint">Méthode : intérêts (poids 3, 2, 1 selon l’ordre du code de la famille) plus un bonus si tes spécialités correspondent. Vérifie chaque formation sur <a href="https://www.onisep.fr" rel="noopener">onisep.fr</a>.</p>
+<div class="ia ${SAMPLE?'':'hidden'}" id="iaBox"><h3 style="margin-top:0">Analyse croisée par l’IA (séance)</h3><p class="hint">Envoie le profil sans prénom. L’IA propose des pistes et des questions ; la consultante relit et valide.</p><button class="btn amb" type="button" data-act="iaAnalyse">Lancer l’analyse</button><div id="iaOut" style="margin-top:12px">${S.ia.analyse?`<pre>${esc(S.ia.analyse)}</pre><p class="hint">Produite le ${esc(new Date(S.ia.date).toLocaleString('fr-FR'))}. À relire : l’IA peut se tromper ou citer des formations inexactes.</p>`:''}</div></div>
+<h3>Rechercher des formations réelles</h3><div class="grid2"><div class="card"><p><b>1. Prépare la recherche.</b> Ces informations alimentent la présélection automatique MCLAB (données ouvertes Parcoursup).</p><label for="kw">Mots-clés métiers et formations <span class="hint">(séparés par des virgules)</span></label><input type="text" id="kw" data-k="kw" value="${esc(S.kw)}" placeholder="marketing, événementiel, communication"><div class="row"><button class="btn ghost" type="button" data-act="copyMake">Copier la fiche de recherche</button></div></div>
+<div class="card"><p><b>2. Importe le résultat.</b> Exporte la vue des formations en CSV depuis Airtable, puis importe-la ici.</p><button class="btn" type="button" data-act="importCsv">Importer les formations (CSV)</button><p class="hint">${S.forms.length} formation(s) en mémoire.</p></div></div>${notes('pistes')}`};
+
+function cat(f){const t=num(f.taux);if(t==null)return '';return t<30?'Ambitieux':t<70?'Réaliste':'Sécurisant'}
+V.voeux=()=>{const ch=S.forms.filter(f=>f.ch),std=ch.filter(f=>!f.app).length,app=ch.filter(f=>f.app).length;const c={Ambitieux:0,'Réaliste':0,'Sécurisant':0};ch.forEach(f=>{const k=f.cat||cat(f);if(c[k]!=null)c[k]++});return `${gate()}<h2>Ta stratégie de vœux</h2><p class="lead">Parcoursup 2027 permet jusqu’à 10 vœux, sans les classer, et 10 vœux supplémentaires en apprentissage. Certaines formations ouvrent des sous-vœux.</p>
+<div class="grid2"><div class="card"><h3 style="margin-top:0">Ta liste</h3><p class="count ${std>10?'over':''}">Vœux classiques : ${std}/10</p><p class="count ${app>10?'over':''}">Vœux en apprentissage : ${app}/10</p>
+<div class="bars">${Object.entries(c).map(([k,v])=>`<div class="b"><span>${k}</span><span class="t"><i style="width:${Math.min(100,v*20)}%"></i></span><span class="v">${v}</span></div>`).join('')}</div>${advice(c,ch.length)}</div>
+<div class="card"><h3 style="margin-top:0">Ajouter une formation</h3><label for="nf_lib">Formation</label><input type="text" id="nf_lib"><label for="nf_etab">Établissement et ville</label><input type="text" id="nf_etab"><label for="nf_taux">Taux d’accès de l’an dernier (%) <span class="hint">(fiche Parcoursup)</span></label><input type="text" id="nf_taux" inputmode="decimal"><label class="chk"><input type="checkbox" id="nf_app"><span>En apprentissage</span></label><div class="row"><button class="btn" type="button" data-act="addForm">Ajouter</button></div></div></div>
+<h3>Formations repérées (${S.forms.length})</h3>${S.forms.length?`<div class="scroll"><table class="stack"><thead><tr><th>Vœu</th><th>Formation</th><th>Établissement</th><th class="n">Taux d’accès</th><th>Catégorie</th><th></th></tr></thead><tbody>${S.forms.map((f,i)=>`<tr><td data-l="Vœu"><input type="checkbox" aria-label="Retenir en vœu" data-fi="${i}" data-fk="ch" ${f.ch?'checked':''} style="width:22px;height:22px"></td><td data-l="Formation">${f.lien?`<a href="${esc(safeUrl(f.lien))}" rel="noopener">${esc(f.lib)}</a>`:esc(f.lib)}${f.app?' <span class="tag t2">apprentissage</span>':''}</td><td data-l="Établissement">${esc(f.etab)}</td><td class="n" data-l="Taux d’accès">${num(f.taux)!=null?esc(f.taux)+' %':'non publié'}</td><td data-l="Catégorie"><select aria-label="Catégorie" data-fi="${i}" data-fk="cat">${['', 'Ambitieux','Réaliste','Sécurisant'].map(o=>`<option value="${o}" ${(f.cat||cat(f))===o?'selected':''}>${o||'à définir'}</option>`).join('')}</select></td><td><button class="btn ghost" type="button" data-act="delForm" data-i="${i}" aria-label="Supprimer">Retirer</button></td></tr>`).join('')}</tbody></table></div>`:'<p class="hint">Aucune formation pour l’instant : importe la présélection (étape Pistes) ou ajoute-les à la main.</p>'}
+<p class="hint">Catégorie proposée à partir du taux d’accès (moins de 30 %, 30 à 70 %, plus de 70 %) : repère MCLAB à ajuster selon ton dossier, pas une règle officielle.</p>${notes('voeux')}`};
+function advice(c,n){if(!n)return '<p class="hint">Coche des formations dans la liste pour construire ta stratégie.</p>';const m=[];if(!c['Sécurisant'])m.push('Ajoute au moins un vœu sécurisant pour garder une solution.');if(!c.Ambitieux)m.push('Tu peux tenter un vœu ambitieux qui te fait vraiment envie.');if(n<4)m.push('Peu de vœux : vérifie que tes pistes sont assez ouvertes.');return m.length?`<div class="note">${m.map(esc).join('<br>')}</div>`:'<div class="okbox">Ta liste est équilibrée.</div>'}
+function safeUrl(u){return /^https?:\/\//i.test(u)?u:'#'}
+
+V.dossier=()=>{const ch=S.forms.filter(f=>f.ch);const today=new Date().toISOString().slice(0,10);return `${gate()}<h2>Ton dossier Parcoursup</h2><p class="lead">Le calendrier, la liste de ce qu’il faut préparer et l’atelier d’écriture de tes projets de formation motivés.</p>
+<div class="grid2"><div class="card"><h3 style="margin-top:0">Calendrier 2026-2027</h3><ul class="cal">${CAL.map(c=>`<li class="${c[0]<today?'past':''}"><b>${c[1]}</b><span>${c[2]}</span></li>`).join('')}</ul><p class="hint">Sources : <a href="https://www.service-public.gouv.fr/particuliers/actualites/A17923" rel="noopener">Service-Public.fr</a>, <a href="https://www.parcoursup.gouv.fr/sites/default/files/database/documents/2026-10/calendrier-parcoursup-2027-805_1.pdf" rel="noopener">calendrier Parcoursup 2027</a>. Date du 1er juin à confirmer sur parcoursup.gouv.fr.</p></div>
+<div class="card"><h3 style="margin-top:0">À préparer</h3>${CHECK.map((t,i)=>`<label class="chk"><input type="checkbox" data-k="notes.chk${i}" ${S.notes['chk'+i]?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div></div>
+<h3>Projets de formation motivés</h3><p class="lead">C’est toi qui écris. 1 500 caractères maximum, espaces compris, dans la plupart des formations : vérifie la limite sur chaque fiche. Pas de nom ni de prénom dans le texte.</p>
+<div class="card"><b>Pour t’aider à écrire, réponds à ces questions :</b><ul><li>Qu’est-ce qui m’attire dans <i>cette</i> formation (contenu, stages, projets, lieu) ? J’ai lu sa fiche.</li><li>Qu’ai-je déjà fait qui le montre (cours, projet, stage, engagement, job) ?</li><li>Quelles qualités les attendus demandent, et où je les ai prouvées ?</li><li>Où je me vois après, même de façon provisoire ?</li></ul></div>
+${ch.length?ch.map(f=>{const k=f.id,t=S.proj[k]||'';return `<div class="card" style="margin-top:14px"><label for="pj_${esc(k)}">${esc(f.lib)} <span class="hint">${esc(f.etab)}</span></label><textarea id="pj_${esc(k)}" data-k="proj::${esc(k)}" rows="8">${esc(t)}</textarea><p class="count ${t.length>1500?'over':''}" id="cnt_${esc(k)}">${t.length}/1500 caractères</p><div class="row ${SAMPLE?'':'hidden'}"><button class="btn ghost" type="button" data-act="iaProj" data-id="${esc(k)}">Me poser des questions sur mon texte (IA)</button></div><div id="fb_${esc(k)}"></div></div>`}).join(''):'<p class="hint">Retiens d’abord des vœux à l’étape Vœux.</p>'}${notes('dossier')}`};
+
+V.bilan=()=>{const R=ranked();const kept=DOM.filter(d=>S.pistes.includes(d.id));const ch=S.forms.filter(f=>f.ch);return `<h2>Ton bilan</h2><p class="lead">La synthèse de ton parcours dans l’application. Exporte-la pour la garder, l’apporter en séance ou la reprendre sur un autre appareil.</p>
+<div class="grid2"><div class="card"><h3 style="margin-top:0">Synthèse</h3><p><b>Classe :</b> ${esc(S.e.classe)}, voie ${esc(S.e.voie.toLowerCase())}${S.e.spe.length?', spécialités '+esc(S.e.spe.map(x=>x.split(' (')[0]).join(', ')):''}.</p><p><b>Dominantes d’intérêts :</b> ${answered()>=12?esc(code3()):'profil incomplet'}.</p><p><b>Valeurs :</b> ${esc(S.val.join(', ')||'non renseignées')}.</p><p><b>Pistes retenues :</b> ${esc(kept.map(d=>d.n).join(' ; ')||'aucune pour l’instant')}.</p><p><b>Vœux :</b> ${ch.length} retenu(s).</p><p><b>Contraintes :</b> ${esc([S.cons.region,S.cons.mob,'apprentissage : '+S.cons.app].filter(Boolean).join(', '))}.</p></div>
+<div class="card"><h3 style="margin-top:0">Sauvegarder et partager</h3><div class="row"><button class="btn" type="button" data-act="exportJson">Télécharger ma sauvegarde</button><button class="btn ghost" type="button" data-act="copyJson">Copier la sauvegarde</button></div><div class="row"><button class="btn ghost" type="button" data-act="exportTxt">Télécharger la synthèse (texte)</button><button class="btn ghost" type="button" data-act="importJson">Importer une sauvegarde</button></div>
+<h3>Effacer</h3><p class="hint">Supprime toutes les réponses de ce navigateur. Pense à exporter avant.</p><button class="btn danger" type="button" data-act="wipe" id="wipeBtn">Effacer mes données</button></div></div>
+<h3>Plan d’action</h3><div class="card"><ul class="cal">${[['Avant le 17 décembre 2026','Explorer 2 pistes sur Onisep et noter 3 formations par piste'],['Décembre 2026 à février 2027','Aller à au moins 2 journées portes ouvertes ou salons'],['Dès janvier 2027','Rencontrer un professionnel d’une piste retenue (entourage, réseau, plateformes de témoignages)'],['Avant le 11 mars 2027','Saisir tous les vœux sur Parcoursup'],['Avant le 1er avril 2027','Finaliser les projets motivés et confirmer chaque vœu']].map(a=>`<li><b>${a[0]}</b><span>${a[1]}</span></li>`).join('')}</ul><p class="hint">Plan type à adapter en séance.</p></div>${notes('bilan')}`};
+
+function render(){let id=location.hash.slice(1);if(!V[id])id='accueil';$('#view').innerHTML=V[id]();drawRoute(id);document.title='Boussole Parcoursup MCLAB'}
+function rerender(){const y=scrollY;render();scrollTo(0,y)}
+
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.arr){const p=t.dataset.arr;let a=get(p)||[];a=t.checked?[...new Set([...a,t.value])]:a.filter(x=>x!==t.value);if(p==='g'&&a.length>3){t.checked=false;toast('3 choix maximum');return}set(p,a);save();if(['pistes'].includes(p)||p==='e.spe'||p==='excl')rerender();else drawRoute(location.hash.slice(1)||'accueil');return}
+ if(t.dataset.fi!=null){const f=S.forms[+t.dataset.fi];f[t.dataset.fk]=t.type==='checkbox'?t.checked:t.value;save();rerender();return}
+ if(t.dataset.k&&(t.type==='checkbox'||t.type==='radio'||t.tagName==='SELECT')){bind(t);if(t.type==='radio'&&t.name.startsWith('r'))rerender();if(t.dataset.k.startsWith('meta.'))rerender()}});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.k&&t.type!=='checkbox'&&t.type!=='radio'&&t.tagName!=='SELECT'){bind(t);if(t.dataset.k==='meta.age'){$('#parentRow')?.classList.toggle('hidden',!(Number(t.value)>0&&Number(t.value)<15))}if(t.dataset.k.startsWith('proj::')){const c=document.getElementById('cnt_'+t.dataset.k.slice(6));if(c){c.textContent=t.value.length+'/1500 caractères';c.classList.toggle('over',t.value.length>1500)}}}});
+document.addEventListener('focusout',e=>{const k=e.target.dataset?.k||'';if(k.startsWith('moy::')||k==='e.lycee')drawRoute(location.hash.slice(1))});
+function bind(t){const k=t.dataset.k,v=t.type==='checkbox'?t.checked:t.value;if(k.startsWith('moy::'))S.e.moy[k.slice(5)]=v;else if(k.startsWith('proj::'))S.proj[k.slice(6)]=v;else set(k,v);save()}
+
+function profileText(){const s=scores();const kept=DOM.filter(d=>S.pistes.includes(d.id)).map(d=>d.n);return [`Classe : ${S.e.classe}, voie ${S.e.voie}`,`Spécialités : ${S.e.spe.join(', ')||'non renseignées'}`,`Lycée : ${S.e.lycee||'?'} (${S.e.commune||'?'})`,`Moyennes : ${Object.entries(S.e.moy).filter(([k,v])=>num(v)!=null).map(([k,v])=>k+' '+v).join(' ; ')||'non renseignées'}`,`Appréciations : ${S.e.appr||'-'}`,`Scores d’intérêts RIASEC (sur 9) : ${Object.entries(s).map(([k,v])=>k+'='+v).join(', ')}`,`Intelligences multiples choisies : ${S.g.map(g=>GARDNER.find(x=>x[0]===g)[1]).join(', ')||'-'}`,`Valeurs : ${S.val.join(', ')||'-'}`,`Portrait chinois : animal ${S.pc.animal||'-'} ; objet ${S.pc.objet||'-'} ; lieu ${S.pc.lieu||'-'} ; métier ${S.pc.metier||'-'}`,`Moment de fierté : ${S.motiv||'-'}`,`Domaines exclus : ${DOM.filter(d=>S.excl.includes(d.id)).map(d=>d.n).join(', ')||'aucun'}`,`Contraintes : région ${S.cons.region||'-'}, mobilité ${S.cons.mob}, apprentissage ${S.cons.app}, durée ${S.cons.duree}, budget ${S.cons.budget||'-'}`,`Pistes retenues par l’élève : ${kept.join(' ; ')||'aucune'}`].join('\n')}
+async function iaAnalyse(btn){btn.disabled=true;const out=$('#iaOut');out.innerHTML='<p>Analyse en cours…</p>';const prompt=`Tu es une conseillère d'orientation scolaire bienveillante et rigoureuse qui assiste une consultante (MCLAB Conseil) en séance avec un lycéen français. Voici le profil pseudonymisé de l'élève :\n\n${profileText()}\n\nProduis en français, tutoiement adressé à l'élève, sans émoji :\n1. Une synthèse de son profil en 4 phrases maximum, en reformulant sans jugement.\n2. Trois à quatre pistes de familles de formations post-bac, chacune avec : pourquoi (relié explicitement aux données ci-dessus), types de diplômes (BTS, BUT, licence, CPGE, écoles), un point de vigilance (notes, attendus, coût, sélectivité), et une question à creuser avec l'élève. Classe-les en piste forte, à explorer, ouverture.\n3. Cinq questions ouvertes pour la séance.\n4. Une ligne "Mots-clés :" avec 4 à 6 mots-clés précis de formations ou métiers, sans mots génériques.\nRègles : ne cite aucun nom d'établissement, aucun chiffre, aucun taux. Ne donne jamais une seule bonne réponse. Ne déduis aucun type de personnalité. Si une donnée manque, dis-le.`;
+ try{const r=await SAMPLE(prompt);const txt=(r&&r.text)||'';if(!txt)throw 0;S.ia={analyse:txt,date:new Date().toISOString()};const m=txt.match(/Mots-clés\s*:\s*(.+)/i);if(m&&!S.kw)S.kw=m[1].replace(/[.*]/g,'').trim();save();rerender()}catch(e){out.innerHTML='<div class="note">L’analyse n’a pas pu être produite (accord refusé ou service indisponible). Les pistes calculées restent disponibles.</div>';btn.disabled=false}}
+async function iaProj(id,btn){const t=S.proj[id]||'';const f=S.forms.find(x=>x.id===id);const box=document.getElementById('fb_'+id);if(t.length<200){box.innerHTML='<div class="note">Écris d’abord au moins quelques phrases.</div>';return}btn.disabled=true;box.innerHTML='<p>Lecture en cours…</p>';
+ const prompt=`Tu aides un lycéen à améliorer lui-même son projet de formation motivé Parcoursup pour la formation « ${f?f.lib:''} ». Ne réécris pas son texte et ne propose aucune phrase toute faite. Donne en français, tutoiement, sans émoji : 1) deux points forts précis du texte ; 2) quatre questions qui l'aident à préciser, prouver par des exemples ou relier à la formation ; 3) les éventuels problèmes de forme (longueur, répétitions, formules générales, présence d'un nom). Texte (${t.length} caractères) :\n"""${t}"""`;
+ try{const r=await SAMPLE(prompt);box.innerHTML=`<div class="ia"><pre>${esc(r.text||'')}</pre><p class="hint">Questions générées par IA, à discuter avec la consultante.</p></div>`}catch(e){box.innerHTML='<div class="note">Retour IA indisponible pour le moment.</div>'}btn.disabled=false}
+
+function makeSheet(){return ['FICHE DE RECHERCHE MCLAB (présélection Parcoursup)',`Code élève : [code élève]`,`Classe : ${S.e.classe} - Voie : ${S.e.voie}`,`Spécialités : ${S.e.spe.join(', ')}`,`Lycée : ${S.e.lycee} - ${S.e.commune}`,`Région : ${S.cons.region}`,`Apprentissage : ${S.cons.app}`,`Mots-clés : ${S.kw}`,`Domaines exclus : ${DOM.filter(d=>S.excl.includes(d.id)).map(d=>d.n).join(', ')}`,`Moyennes : ${Object.entries(S.e.moy).filter(([k,v])=>num(v)!=null).map(([k,v])=>k+' '+v).join(' ; ')}`].join('\n')}
+async function copy(t){try{await navigator.clipboard.writeText(t);toast('Copié')}catch(e){const w=$('#view');w.insertAdjacentHTML('afterbegin',`<div class="card"><label for="cpy">Copie manuelle</label><textarea id="cpy" rows="8">${esc(t)}</textarea></div>`);$('#cpy').select();toast('Sélectionne et copie le texte affiché')}}
+async function download(name,text,type){try{if(DL){await DL.save({filename:name,data:text});return true}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);return true}catch(e){toast('Téléchargement refusé : utilise le bouton Copier');return false}}
+function fname(ext){return `boussole-parcoursup-${(S.e.prenom||'eleve').toLowerCase().replace(/[^a-z0-9]+/g,'-')}-${new Date().toISOString().slice(0,10)}.${ext}`}
+function summaryTxt(){const kept=DOM.filter(d=>S.pistes.includes(d.id));return `BILAN BOUSSOLE PARCOURSUP - MCLAB Conseil\n${new Date().toLocaleDateString('fr-FR')}\n\n${profileText()}\n\nPISTES RETENUES\n${kept.map(d=>'- '+d.n+' : '+d.f).join('\n')||'-'}\n\nVŒUX\n${S.forms.filter(f=>f.ch).map(f=>'- '+f.lib+' / '+f.etab+(f.app?' (apprentissage)':'')+' / '+(f.cat||cat(f)||'catégorie à définir')).join('\n')||'-'}\n\n${S.ia.analyse?'ANALYSE IA (à relire)\n'+S.ia.analyse+'\n':''}`}
+
+function parseCSV(t){const rows=[];let r=[],v='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){v+='"';i++}else q=false}else v+=c}else if(c==='"')q=true;else if(c===','||c===';'){r.push(v);v=''}else if(c==='\n'){r.push(v);rows.push(r);r=[];v=''}else if(c!=='\r')v+=c}if(v||r.length){r.push(v);rows.push(r)}return rows.filter(x=>x.some(y=>y.trim()))}
+function importCsv(text){const rows=parseCSV(text);if(rows.length<2){toast('Fichier vide ou illisible');return}const h=rows[0].map(x=>x.toLowerCase());const find=(...ks)=>h.findIndex(c=>ks.some(k=>c.includes(k)));const iL=find('formation','libell','intitul'),iE=find('établissement','etablissement','etab'),iV=find('ville','commune'),iT=find('taux'),iU=find('lien','url'),iA=find('apprent','type'),iC=find('code');if(iL<0){toast('Colonne « formation » introuvable');return}let n=0;rows.slice(1).forEach(r=>{const id=(iC>=0&&r[iC])||(r[iL]+'|'+(r[iE]||''));if(S.forms.some(f=>f.id===id))return;S.forms.push({id:String(id).slice(0,120),lib:(r[iL]||'').slice(0,200),etab:[r[iE],r[iV]].filter(Boolean).join(', ').slice(0,200),taux:iT>=0?(r[iT]||'').replace('%','').trim():'',lien:iU>=0?(r[iU]||'').trim():'',app:iA>=0&&/apprent|oui|true/i.test(r[iA]||''),cat:'',ch:false});n++});save();toast(n+' formation(s) importée(s), doublons ignorés');location.hash='voeux';rerender()}
+
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act;
+ if(a==='importJson')$('#fileJson').click();
+ if(a==='importCsv')$('#fileCsv').click();
+ if(a==='iaAnalyse'&&SAMPLE)iaAnalyse(b);
+ if(a==='iaProj'&&SAMPLE)iaProj(b.dataset.id,b);
+ if(a==='copyMake')copy(makeSheet());
+ if(a==='copyJson')copy(JSON.stringify(S));
+ if(a==='exportJson'){if(await download(fname('json'),JSON.stringify(S,null,1),'application/json')){S.meta.exported=true;save();rerender()}}
+ if(a==='exportTxt')download(fname('txt'),summaryTxt(),'text/plain');
+ if(a==='addForm'){const lib=$('#nf_lib').value.trim();if(!lib){toast('Indique le nom de la formation');return}S.forms.push({id:'m'+Date.now(),lib:lib.slice(0,200),etab:$('#nf_etab').value.trim().slice(0,200),taux:$('#nf_taux').value.trim(),lien:'',app:$('#nf_app').checked,cat:'',ch:true});save();rerender()}
+ if(a==='delForm'){S.forms.splice(+b.dataset.i,1);save();rerender()}
+ if(a==='wipe'){if(b.dataset.sure){try{localStorage.removeItem(KEY)}catch(x){}S=blank();location.hash='accueil';render();toast('Données effacées')}else{b.dataset.sure='1';b.textContent='Confirmer l’effacement définitif';setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent='Effacer mes données'}},5000)}}});
+$('#fileJson').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!d||d.v!==1||!d.e)throw 0;S=Object.assign(blank(),d);save();toast('Sauvegarde importée');render()}catch(x){toast('Ce fichier n’est pas une sauvegarde valide')}e.target.value=''});
+$('#fileCsv').addEventListener('change',async e=>{const f=e.target.files[0];if(f)importCsv(await f.text());e.target.value=''});
+addEventListener('hashchange',()=>{render();$('#view').focus({preventScroll:true});scrollTo(0,0)});
+if(!STORE)$('#chipSave').textContent='Sauvegarde navigateur indisponible : pense à exporter';
+render();
+if(window.claude&&typeof window.claude.use==='function'){window.claude.use('sample').then(s=>{if(s){SAMPLE=s;const c=$('#chipMode');c.textContent='Mode séance : IA disponible';c.classList.add('on');rerender()}}).catch(()=>{});window.claude.use('downloads').then(d=>{if(d)DL=d}).catch(()=>{})}
+}
+</script>
+</body>
+</html>
